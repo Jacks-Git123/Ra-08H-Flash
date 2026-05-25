@@ -264,14 +264,25 @@ void OnTxDone(void) {
 	uartLen = 0;
 	txBusy = 0;
 	State = LOWPOWER;
+	
+	// Define a 1-byte array containing the raw numeric value 1
+    uint8_t ackVal = 1; 
+    UartWrite(&ackVal, 1);
+
 	Radio.Rx(RX_TIMEOUT_VALUE);
 }
 
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
     Radio.Sleep( );
     BufferSize = size;
-    memcpy( Buffer, payload, BufferSize );
+    memcpy(Buffer, payload, BufferSize);
+	
+	// 1. Send the raw LoRa payload to the ESP32/STM32
 	UartWrite(Buffer, BufferSize);
+	
+	// 2. Append the newline character immediately after
+    uint8_t newline = '\n';
+    UartWrite(&newline, 1);
 	
     RssiValue = rssi;
     SnrValue = snr;
