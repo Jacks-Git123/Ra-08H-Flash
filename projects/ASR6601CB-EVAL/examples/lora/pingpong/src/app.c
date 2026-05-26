@@ -27,9 +27,10 @@
 #include "timer.h"
 #include "radio.h"
 #include "tremo_system.h"
+#include "tremo_lpuart.h"
 
 #define REGION_US915
-#define USE_MODEM_LORA
+//#define USE_MODEM_LORA
 
 #if defined( REGION_AS923 )
 
@@ -119,7 +120,7 @@ typedef enum
 #define RX_TIMEOUT_VALUE                            1800
 #define BUFFER_SIZE                                 128 // Define the payload size here
 
-extern volatile uint8_t rx_data[RX_SIZE];
+extern volatile uint8_t rx_data[BUFFER_SIZE];
 extern volatile uint16_t rx_index;
 
 uint16_t BufferSize = BUFFER_SIZE;
@@ -183,9 +184,6 @@ void UartWrite(uint8_t *data, uint16_t len) {
  */
 
 int app_start(void) {
-    uint8_t i;
-    uint32_t random;
-
     (void)system_get_chip_id(ChipId);
     
     // Radio initialization
