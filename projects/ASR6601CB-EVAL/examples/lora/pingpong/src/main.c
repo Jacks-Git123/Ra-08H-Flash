@@ -109,7 +109,7 @@ void lpuart_IRQHandler(void) {
             rx_data[rx_index++] = byte1;
         }else {
             rx_index = 0; // reset on overflow (simple fix)
-			memset(rx_data, 0, RX_SIZE);
+			memset((void *)rx_data, 0, RX_SIZE);
         }
     }
 }
