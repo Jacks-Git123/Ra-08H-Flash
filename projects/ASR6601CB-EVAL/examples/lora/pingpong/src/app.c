@@ -228,6 +228,15 @@ int app_start(void) {
     Radio.Rx( RX_TIMEOUT_VALUE );
 
     while (1) {
+		const char *msg = "TEST\r\n";
+
+		for (int i = 0; msg[i]; i++) {
+			lpuart_send_data(LPUART, msg[i]);
+			while (!lpuart_get_tx_done_status(LPUART));
+			lpuart_clear_tx_done_status(LPUART);
+		}
+
+		delay_ms(1000);
 		Radio.IrqProcess();
 
 		if (rx_index > 0 && !txBusy) {
