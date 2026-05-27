@@ -236,7 +236,7 @@ int app_start(void) {
 			lpuart_clear_tx_done_status(LPUART);
 		}
 
-		delay_ms(1000);
+		
 		Radio.IrqProcess();
 
 		if (rx_index > 0 && !txBusy) {
