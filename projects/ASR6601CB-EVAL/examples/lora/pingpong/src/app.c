@@ -178,7 +178,7 @@ void UartWrite(uint8_t *data, uint16_t len) {
         uart_send_data(UART0, data[i]);
         
         // 2. Wait until TX transmission is complete (TX empty flag turns true)
-        while (uart_get_flag_status(UART0, UART_FLAG_TX_EMPTY) == RESET);
+        while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
     }
 }
 
