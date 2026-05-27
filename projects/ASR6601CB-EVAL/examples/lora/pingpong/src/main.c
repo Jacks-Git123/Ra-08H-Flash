@@ -17,30 +17,36 @@
 extern int app_start(void);
 
 //LPUART Configuration
-void LpuartInit(void);
-void lpuart_IRQHandler(void);
+//void LpuartInit(void);
+//UART0 Configuration
+void uart0_IRQHandler(void);
 
-//void uart_log_init(void)
-//{
-    //// uart0
-    //gpio_set_iomux(GPIOB, GPIO_PIN_0, 1);
-    //gpio_set_iomux(GPIOB, GPIO_PIN_1, 1);
+void uart_log_init(void) {
+    // uart0
+    gpio_set_iomux(GPIOB, GPIO_PIN_0, 1); //RX: GP16
+    gpio_set_iomux(GPIOB, GPIO_PIN_1, 1); //TX GP17
 
-    ///* uart config struct init */
-    //uart_config_t uart_config;
-    //uart_config_init(&uart_config);
+    /* uart config struct init */
+    uart_config_t uart_config;
+    uart_config_init(&uart_config);
 
-    //uart_config.baudrate = UART_BAUDRATE_115200;
-    //uart_init(CONFIG_DEBUG_UART, &uart_config);
-    //uart_cmd(CONFIG_DEBUG_UART, ENABLE);
-//}
+    uart_config.baudrate = UART_BAUDRATE_115200;
+    uart_init(UART0, &uart_config);
+    uart_cmd(UART0, ENABLE);
+	
+	uart_config_interrupt(UART0, UART_INTERRUPT_RX_DONE, ENABLE);
+
+	/* NVIC config */
+	NVIC_SetPriority(UART0_IRQn, 2);
+	NVIC_EnableIRQ(UART0_IRQn);
+}
 
 void board_init() {
 	rcc_enable_peripheral_clk(RCC_PERIPHERAL_AFEC, true);
     rcc_enable_oscillator(RCC_OSC_XO32K, true);
 
-    //rcc_enable_peripheral_clk(RCC_PERIPHERAL_UART0, true);
-	rcc_enable_peripheral_clk(RCC_PERIPHERAL_LPUART, true);
+    rcc_enable_peripheral_clk(RCC_PERIPHERAL_UART0, true);
+	//rcc_enable_peripheral_clk(RCC_PERIPHERAL_LPUART, true);
     rcc_enable_peripheral_clk(RCC_PERIPHERAL_GPIOA, true);
     rcc_enable_peripheral_clk(RCC_PERIPHERAL_GPIOB, true);
     rcc_enable_peripheral_clk(RCC_PERIPHERAL_GPIOC, true);
@@ -53,8 +59,8 @@ void board_init() {
     delay_ms(100);
     pwr_xo32k_lpm_cmd(true);
     
-    //uart_log_init();
-	LpuartInit();
+    uart_log_init();
+	//LpuartInit();
 
     RtcInit();
 }
@@ -70,43 +76,46 @@ int main(void) {
     app_start();
 }
 
-void LpuartInit(void) {
-	lpuart_init_t lpuart_init_cofig;
+// void LpuartInit(void) {
+	// lpuart_init_t lpuart_init_cofig;
 
-	gpio_set_iomux(GPIOC, GPIO_PIN_11, 2); // TX:GP11
-	gpio_set_iomux(GPIOD, GPIO_PIN_10, 2); // RX:GP10
+	// gpio_set_iomux(GPIOC, GPIO_PIN_11, 2); // TX:GP11
+	// gpio_set_iomux(GPIOD, GPIO_PIN_10, 2); // RX:GP10
 
-	lpuart_init_cofig.baudrate         = 9600;
-	lpuart_init_cofig.data_width       = LPUART_DATA_8BIT;
-	lpuart_init_cofig.parity           = LPUART_PARITY_NONE;
-	lpuart_init_cofig.stop_bits        = LPUART_STOP_1BIT;
-	lpuart_init_cofig.low_level_wakeup = true;
-	lpuart_init_cofig.start_wakeup     = false;
-	lpuart_init_cofig.rx_done_wakeup   = false;
-	lpuart_init(LPUART, &lpuart_init_cofig);
+	// lpuart_init_cofig.baudrate         = 9600;
+	// lpuart_init_cofig.data_width       = LPUART_DATA_8BIT;
+	// lpuart_init_cofig.parity           = LPUART_PARITY_NONE;
+	// lpuart_init_cofig.stop_bits        = LPUART_STOP_1BIT;
+	// lpuart_init_cofig.low_level_wakeup = true;
+	// lpuart_init_cofig.start_wakeup     = false;
+	// lpuart_init_cofig.rx_done_wakeup   = false;
+	// lpuart_init(LPUART, &lpuart_init_cofig);
 
-	lpuart_config_interrupt(LPUART, LPUART_CR1_RX_NOT_EMPTY_INT, ENABLE);
+	// lpuart_config_interrupt(LPUART, LPUART_CR1_RX_NOT_EMPTY_INT, ENABLE);
 
-	lpuart_config_tx(LPUART, true);
-	lpuart_config_rx(LPUART, true);
+	// lpuart_config_tx(LPUART, true);
+	// lpuart_config_rx(LPUART, true);
 
-	/* NVIC config */
-	NVIC_SetPriority(LPUART_IRQn, 2);
-	NVIC_EnableIRQ(LPUART_IRQn);
+	// /* NVIC config */
+	// NVIC_SetPriority(LPUART_IRQn, 2);
+	// NVIC_EnableIRQ(LPUART_IRQn);
 
-	//for (int i = 0; i < 11; i++) {
-		//lpuart_send_data(LPUART, tx_data[i]);
-		//while (!lpuart_get_tx_done_status(LPUART)) ;
-		//lpuart_clear_tx_done_status(LPUART);
-	//}
-}
+	// for (int i = 0; i < 11; i++) {
+		// lpuart_send_data(LPUART, tx_data[i]);
+		// while (!lpuart_get_tx_done_status(LPUART)) ;
+		// lpuart_clear_tx_done_status(LPUART);
+	// }
+// }
 
-void lpuart_IRQHandler(void) {
-    if (lpuart_get_rx_not_empty_status(LPUART)) {
-        uint8_t byte1 = lpuart_receive_data(LPUART);
+void uart0_IRQHandler(void) {
+    if (uart_get_rx_not_empty_status(UART0)) {
+        uint8_t byte1 = uart_receive_data(UART0);
 
-        if (rx_index < RX_SIZE) {
+        if (rx_index < RX_SIZE-1) {
             rx_data[rx_index++] = byte1;
+			if (byte1 == '\n') {
+                uartReady = 1;
+            }
         }else {
             rx_index = 0; // reset on overflow (simple fix)
 			memset((void *)rx_data, 0, RX_SIZE);

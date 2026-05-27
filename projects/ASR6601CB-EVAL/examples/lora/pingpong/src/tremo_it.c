@@ -1,8 +1,4 @@
-
 #include "tremo_it.h"
-
-extern void RadioOnDioIrq(void);
-extern void RtcOnIrq(void);
 
 /**
  * @brief  This function handles NMI exception.
@@ -100,6 +96,16 @@ void PWR_IRQHandler()
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_cm4.S).                                               */
 /******************************************************************************/
+
+/**
+ * @brief  This function handles LPUART Handler.
+ * @param  None
+ * @retval None
+ */
+void UART0_IRQHandler(void)
+{
+    uart0_IRQHandler();
+}
 
 void LORA_IRQHandler()
 {

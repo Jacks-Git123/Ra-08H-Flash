@@ -173,9 +173,9 @@ void OnRxError( void );
 
 void UartWrite(uint8_t *data, uint16_t len) {
     for (uint16_t i = 0; i < len; i++) {
-        lpuart_send_data(LPUART, data[i]);
-        while (!lpuart_get_tx_done_status(LPUART));
-        lpuart_clear_tx_done_status(LPUART);
+        uart_send_data(UART0, data[i]);
+        while (!uart_get_tx_done_status(UART0));
+        uart_clear_tx_done_status(UART0);
     }
 }
 
@@ -228,22 +228,15 @@ int app_start(void) {
     Radio.Rx( RX_TIMEOUT_VALUE );
 
     while (1) {
-		const char *msg = "TEST\r\n";
+		UartWrite((uint8_t*)"Hello\r\n",7);
 
-		for (int i = 0; msg[i]; i++) {
-			lpuart_send_data(LPUART, msg[i]);
-			while (!lpuart_get_tx_done_status(LPUART));
-			lpuart_clear_tx_done_status(LPUART);
-		}
-
-		
 		Radio.IrqProcess();
 
 		if (rx_index > 0 && !txBusy) {
 			int pktLen = -1;
 
 			// Briefly disable interrupts to scan the buffer safely
-			NVIC_DisableIRQ(LPUART_IRQn); 
+			NVIC_DisableIRQ(UART0_IRQn); 
 			for (int i = 0; i < rx_index; i++) {
 				if (rx_data[i] == '\n') {
 					pktLen = i + 1;
@@ -261,7 +254,7 @@ int app_start(void) {
 				}
 				rx_index = remaining;
 			}
-			NVIC_EnableIRQ(LPUART_IRQn);
+			NVIC_EnableIRQ(UART0_IRQn);
 		}
 	}
 }
