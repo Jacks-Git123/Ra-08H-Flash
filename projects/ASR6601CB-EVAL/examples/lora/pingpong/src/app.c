@@ -28,6 +28,7 @@
 #include "radio.h"
 #include "tremo_system.h"
 #include "tremo_lpuart.h"
+#include "tremo_uart.h"
 
 #define REGION_US915
 //#define USE_MODEM_LORA
@@ -173,9 +174,11 @@ void OnRxError( void );
 
 void UartWrite(uint8_t *data, uint16_t len) {
     for (uint16_t i = 0; i < len; i++) {
+        // 1. Send data using standard UART function
         uart_send_data(UART0, data[i]);
-        while (!uart_get_tx_done_status(UART0));
-        uart_clear_tx_done_status(UART0);
+        
+        // 2. Wait until TX transmission is complete (TX empty flag turns true)
+        while (uart_get_flag_status(UART0, UART_FLAG_TX_EMPTY) == RESET);
     }
 }
 
