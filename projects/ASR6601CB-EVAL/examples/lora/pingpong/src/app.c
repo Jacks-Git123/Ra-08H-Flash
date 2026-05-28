@@ -232,7 +232,7 @@ int app_start(void) {
 
     while (1) {
 		//UartWrite((uint8_t*)"Hello\r\n",7);
-		if (uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_EMPTY)) {
+		if (uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_FULL)) {
 			uint8_t b = uart_receive_data(UART0);
 
 			uart_send_data(UART0, b);
