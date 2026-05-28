@@ -108,22 +108,28 @@ int main(void) {
 // }
 
 void uart0_IRQHandler(void) {
-	if (uart_get_interrupt_status(UART0, UART_INTERRUPT_RX_DONE) == SET) 
-    {
-        // 2. Read the byte from the hardware register
-        uint8_t d = uart_receive_data(UART0);
+	// if (uart_get_interrupt_status(UART0, UART_INTERRUPT_RX_DONE) == SET) {
+        //2. Read the byte from the hardware register
+        // uint8_t d = uart_receive_data(UART0);
 
-        if (rx_index < RX_SIZE) {
-            rx_data[rx_index++] = d;
-        } 
-        else {
-            // Buffer overflow precaution: flush and reset
-			rx_index = 0;
-            memset((void *)rx_data, 0, RX_SIZE);
-        }
+        // if (rx_index < RX_SIZE) {
+            // rx_data[rx_index++] = d;
+        // } 
+        // else {
+            //Buffer overflow precaution: flush and reset
+			// rx_index = 0;
+            // memset((void *)rx_data, 0, RX_SIZE);
+        // }
 
-        // 3. Clear the RX interrupt flag so the hardware knows the byte was handled
-        uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
+        //3. Clear the RX interrupt flag so the hardware knows the byte was handled
+        // uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
+    // }
+	if (uart_get_interrupt_status(UART0)) {
+        uint8_t byte = uart_receive_data(UART0);
+
+        uart_send_data(UART0, byte);
+
+        while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
     }
 }
 
