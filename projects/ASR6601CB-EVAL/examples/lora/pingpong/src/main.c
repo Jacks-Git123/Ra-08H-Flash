@@ -124,7 +124,7 @@ void uart0_IRQHandler(void) {
         //3. Clear the RX interrupt flag so the hardware knows the byte was handled
         // uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
     // }
-	if (uart_get_interrupt_status(UART0)) {
+	if (uart_get_interrupt_status(UART0, UART_INTERRUPT_RX_DONE)) {
         uint8_t byte = uart_receive_data(UART0);
 
         uart_send_data(UART0, byte);
