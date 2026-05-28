@@ -231,7 +231,7 @@ int app_start(void) {
     Radio.Rx( RX_TIMEOUT_VALUE );
 
     while (1) {
-		UartWrite((uint8_t*)"Hello\r\n",7);
+		//UartWrite((uint8_t*)"Hello\r\n",7);
 
 		Radio.IrqProcess();
 
