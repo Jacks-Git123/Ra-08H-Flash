@@ -1,5 +1,8 @@
 #include "tremo_it.h"
 
+extern void RadioOnDioIrq(void);
+extern void RtcOnIrq(void);
+
 /**
  * @brief  This function handles NMI exception.
  * @param  None
@@ -98,7 +101,7 @@ void PWR_IRQHandler()
 /******************************************************************************/
 
 /**
- * @brief  This function handles LPUART Handler.
+ * @brief  This function handles UART0 Handler.
  * @param  None
  * @retval None
  */
