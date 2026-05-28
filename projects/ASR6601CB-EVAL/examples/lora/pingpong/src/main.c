@@ -114,7 +114,7 @@ void uart0_IRQHandler(void) {
         uint8_t d = uart_receive_data(UART0);
 
         if (rx_index < RX_SIZE) {
-            rx_data[rx_index++] = byte1;
+            rx_data[rx_index++] = d;
         } 
         else {
             // Buffer overflow precaution: flush and reset
@@ -123,7 +123,7 @@ void uart0_IRQHandler(void) {
         }
 
         // 3. Clear the RX interrupt flag so the hardware knows the byte was handled
-        uart_clear_interrupt_status(UART0, UART_INTERRUPT_RX_DONE);
+        uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
     }
 }
 
