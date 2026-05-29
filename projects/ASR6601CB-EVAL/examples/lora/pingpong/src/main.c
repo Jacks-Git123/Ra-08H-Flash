@@ -126,8 +126,7 @@ void uart0_IRQHandler(void) {
         // uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
     // }
 	uart_send_data(UART0, 'X');
-	if (uart_get_interrupt_status(UART0,UART_INTERRUPT_RX_DONE) ||
-        uart_get_interrupt_status(UART0,UART_INTERRUPT_RX_TIMEOUT)) {
+	if (uart_get_interrupt_status(UART0,UART_INTERRUPT_RX_TIMEOUT)) {
 			
 		while (!uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_EMPTY)) {
 			uint8_t b = uart_receive_data(UART0);
@@ -137,7 +136,7 @@ void uart0_IRQHandler(void) {
 		}
 	}
 	
-	uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
+	//uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
 	uart_clear_interrupt(UART0, UART_INTERRUPT_RX_TIMEOUT);
 }
 
