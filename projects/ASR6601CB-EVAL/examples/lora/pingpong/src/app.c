@@ -232,11 +232,11 @@ int app_start(void) {
 
     while (1) {
 		//UartWrite((uint8_t*)"Hello\r\n",7);
-		if (!uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_EMPTY)) {
-			uint8_t b = uart_receive_data(UART0);
-			uart_send_data(UART0, b);
-			while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
-		}
+		// if (!uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_EMPTY)) {
+			// uint8_t b = uart_receive_data(UART0);
+			// uart_send_data(UART0, b);
+			// while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
+		// }
 		Radio.IrqProcess();
 
 		if (rx_index > 0 && !txBusy) {
