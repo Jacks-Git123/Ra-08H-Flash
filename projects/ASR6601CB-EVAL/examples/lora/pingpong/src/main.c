@@ -35,6 +35,7 @@ void uart_log_init(void) {
     uart_cmd(UART0, ENABLE);
 	
 	uart_config_interrupt(UART0, UART_INTERRUPT_RX_DONE, ENABLE);
+	uart_config_interrupt(UART0, UART_INTERRUPT_RX_TIMEOUT, ENABLE);
 
 	/* NVIC config */
 	NVIC_SetPriority(UART0_IRQn, 2);
@@ -124,11 +125,20 @@ void uart0_IRQHandler(void) {
         //3. Clear the RX interrupt flag so the hardware knows the byte was handled
         // uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
     // }
-	while (!uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_EMPTY)) {
-        uint8_t b = uart_receive_data(UART0);
+	uart_send_data(UART0, 'X');
+	if (uart_get_interrupt_status(UART0,UART_INTERRUPT_RX_DONE) ||
+        uart_get_interrupt_status(UART0,UART_INTERRUPT_RX_TIMEOUT)) {
+			
+		while (!uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_EMPTY)) {
+			uint8_t b = uart_receive_data(UART0);
 
-        uart_send_data(UART0, b);  // echo immediately
-    }
+			uart_send_data(UART0, b);  // echo immediately
+			while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
+		}
+	}
+	
+	uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
+	uart_clear_interrupt(UART0, UART_INTERRUPT_RX_TIMEOUT);
 }
 
 #ifdef USE_FULL_ASSERT
