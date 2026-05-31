@@ -231,57 +231,59 @@ int app_start(void) {
     Radio.Rx( RX_TIMEOUT_VALUE );
 
     while (1) {
-		//UartWrite((uint8_t*)"Hello\r\n",7);
-		// if (!uart_get_flag_status(UART0, UART_FLAG_RX_FIFO_EMPTY)) {
-			// uint8_t b = uart_receive_data(UART0);
-			// uart_send_data(UART0, b);
-			// while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
-		// }
 		Radio.IrqProcess();
-		
-		static uint16_t last_echo_index = 0;
-		if (rx_index > last_echo_index) {
-			uart_send_data(UART0, rx_data[last_echo_index]);
-			while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
-			last_echo_index++;
-		}
+		// static uint16_t last_echo_index = 0;
+		// if (rx_index > last_echo_index) {
+			// uart_send_data(UART0, rx_data[last_echo_index]);
+			// while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
+			// last_echo_index++;
+		// }
 
-		if (rx_index > 0 && !txBusy) {
-			int pktLen = -1;
+        // Check if data exists and the radio isn't currently transmitting
+        if (rx_index > 0 && !txBusy) {
+            int pktLen = -1;
 
-			// Briefly disable interrupts to scan the buffer safely
-			NVIC_DisableIRQ(UART0_IRQn); 
-			for (int i = 0; i < rx_index; i++) {
-				if (rx_data[i] == '\n') {
-					pktLen = i + 1;
-					break;
-				}
-			}
+            // Step 1: Temporarily pause the UART interrupt so data doesn't shift mid-read
+            NVIC_DisableIRQ(UART0_IRQn); 
 
-			if (pktLen > 0) {
-				txBusy = 1;
-				Radio.Send((uint8_t *)rx_data, pktLen);
-				
-				uint16_t remaining = rx_index - pktLen;
-				if (remaining > 0) {
-					memmove((void*)rx_data, (void*)&rx_data[pktLen], remaining);
-				}
-				rx_index = remaining;
-			}
-			NVIC_EnableIRQ(UART0_IRQn);
-		}
+            // Step 2: Search the buffer for the newline '\n' string terminator
+            for (int i = 0; i < rx_index; i++) {
+                if (rx_data[i] == '\n') {
+                    pktLen = i + 1; // Length includes the '\n' character
+                    break;
+                }
+            }
+
+            // Step 3: If a full line was found, hand it off to the Radio!
+            if (pktLen > 0) {
+                txBusy = 1; // Lock the transmitter flag
+                
+                // Broadcast the exact line over the airwaves
+                Radio.Send((uint8_t *)rx_data, pktLen);
+                
+                // Step 4: If extra data arrived after the '\n', shift it to the front
+                uint16_t remaining = rx_index - pktLen;
+                if (remaining > 0) {
+                    memmove((void*)rx_data, (void*)&rx_data[pktLen], remaining);
+                }
+                rx_index = remaining;
+            }
+
+            // Step 5: Re-enable the UART interrupt so the ESP32 can keep talking
+            NVIC_EnableIRQ(UART0_IRQn);
+        }
 	}
 }
 
 void OnTxDone(void) {
     Radio.Sleep( );
 	uartLen = 0;
-	txBusy = 0;
+	txBusy = 0; // Unlock the transmitter so the while(1) loop can scan again
 	State = LOWPOWER;
 	
 	// Define a 1-byte array containing the raw numeric value 1
     uint8_t ackVal = 1; 
-    UartWrite(&ackVal, 1);
+    UartWrite(&ackVal, 1); //transmit byte
 
 	Radio.Rx(RX_TIMEOUT_VALUE);
 }

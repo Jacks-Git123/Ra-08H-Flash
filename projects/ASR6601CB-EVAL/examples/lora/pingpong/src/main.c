@@ -109,26 +109,26 @@ int main(void) {
 // }
 
 void uart0_IRQHandler(void) {
-	// 1. Listen for the standard RX Done interrupt
+	// Check if the interrupt was triggered by an RX completion flag
     if (uart_get_interrupt_status(UART0, UART_INTERRUPT_RX_DONE) == SET) {
         
-        // 2. Safely read the incoming byte
+        // Read the byte out of the hardware register
         uint8_t d = uart_receive_data(UART0);
 
         if (rx_index < RX_SIZE) {
-            rx_data[rx_index++] = d;
+            rx_data[rx_index++] = d; 
         } 
         else {
-            // Buffer overflow mitigation
-            memset((void *)rx_data, 0, RX_SIZE);
+            // Safety fallback: if buffer overflows before finding a '\n', clear it
             rx_index = 0;
+            memset((void *)rx_data, 0, RX_SIZE);
         }
 
-        // 3. Clear the interrupt status flag
+        // Clear the interrupt so the hardware can accept the next character
         uart_clear_interrupt(UART0, UART_INTERRUPT_RX_DONE);
     }
     
-    // 4. Handle standard Timeout clears if enabled
+    // Clear out any line timeout flags if they occur
     if (uart_get_interrupt_status(UART0, UART_INTERRUPT_RX_TIMEOUT) == SET) {
         uart_clear_interrupt(UART0, UART_INTERRUPT_RX_TIMEOUT);
     }
