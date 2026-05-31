@@ -238,6 +238,13 @@ int app_start(void) {
 			// while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
 		// }
 		Radio.IrqProcess();
+		
+		static uint16_t last_echo_index = 0;
+		if (rx_index > last_echo_index) {
+			uart_send_data(UART0, rx_data[last_echo_index]);
+			while (uart_get_flag_status(UART0, UART_FLAG_TX_FIFO_EMPTY) == RESET);
+			last_echo_index++;
+		}
 
 		if (rx_index > 0 && !txBusy) {
 			int pktLen = -1;
