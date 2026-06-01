@@ -303,8 +303,26 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
     RssiValue = rssi;
     SnrValue = snr;
 	
-    State = LOWPOWER;
-	Radio.Rx(RX_TIMEOUT_VALUE);
+    // --- NEW: FORWARD RECEIVED RADIO PACKET TO THE SERIAL MONITOR / ESP32 ---
+    if (BufferSize > 0) {
+        // 1. Send a specific prefix identifier so the ESP32 can distinguish 
+        // a text message from a numeric '1' confirmation ack
+        char prefix[] = "RX: ";
+        UartWrite((uint8_t *)prefix, strlen(prefix));
+        
+        // 2. Write the actual message bytes received over the radio
+        UartWrite(Buffer, BufferSize);
+        
+        //3. Optional: Send a newline if the transmitter didn't include one
+        // if (Buffer[BufferSize - 1] != '\n') {
+            // char nl = '\n';
+            // UartWrite((uint8_t *)&nl, 1);
+        // }
+    }
+    
+    State = RX;
+    // Put the radio back into continuous listening mode
+    Radio.Rx(RX_TIMEOUT_VALUE);
 }
 
 void OnTxTimeout(void) {
