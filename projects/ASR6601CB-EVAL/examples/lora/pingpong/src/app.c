@@ -77,7 +77,9 @@
     #error "Please define a frequency band in the compiler options."
 #endif
 
-#define TX_OUTPUT_POWER                             14        // dBm
+//RST is active low  ->  BOOT is active high
+//Hold BOOT, pulse RST, and then flash  ->  release BOOT after flash complete
+#define TX_OUTPUT_POWER                             22        // dBm
 
 #if defined( USE_MODEM_LORA )
 
@@ -85,7 +87,7 @@
                                                               //  1: 250 kHz,
                                                               //  2: 500 kHz,
                                                               //  3: Reserved]
-#define LORA_SPREADING_FACTOR                       7         // [SF7..SF12]
+#define LORA_SPREADING_FACTOR                       12         // [SF7..SF12]
 #define LORA_CODINGRATE                             1         // [1: 4/5,
                                                               //  2: 4/6,
                                                               //  3: 4/7,
